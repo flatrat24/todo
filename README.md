@@ -37,7 +37,7 @@ for a little demo
 ## License
 
 This project is licensed under the [GPLv3](LICENSE.md)
-License - see the [LICENSE.md](LICENSE.md) file for
+GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for
 details
 
 ## Acknowledgments
