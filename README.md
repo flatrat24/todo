@@ -30,6 +30,14 @@ And repeat
 End with an example of getting some data out of the system or using it
 for a little demo
 
+## Development Todo
+- [] Support for multiple todo-lists
+- [] Provide muliple keybinds for each action
+- [] Toggle complete/incomplete
+- [] Prettier UI
+- [] Subtasks for each task
+- [] Backup file for tasks.txt
+
 ## Authors
 
   - **Ethan Anthony** - [ethananthony271](https://github.com/ethananthony271/)
