@@ -97,6 +97,22 @@ void markIncomplete(todoList *list, const int index) {
     }
 }
 
+void toggleComplete(todoList *list, const int index) {
+    if (list->count == 0 ) {
+        printf("Todo list is currently empty.");
+        return;
+    } else if (index < 0 || index > list->count) {
+        printf("Invalid index.");
+        return;
+    } else {
+        if (list->items[index].completed == 0) {
+            list->items[index].completed = 1;
+        } else {
+            list->items[index].completed = 0;
+        }
+    }
+}
+
 void printList(todoList *list) {
     for (int i = 0; i < list->count; ++i) {
         printw("%d. [%c] - %s\n", i+1, list->items[i].completed ? 'x' : ' ', list->items[i].task);
@@ -112,7 +128,7 @@ int main() {
     noecho();
     keypad(stdscr, TRUE);
 
-    char fileName[] = "tasks.txt";
+    char fileName[] = "todo.txt";
     readFromFile(&todoList, fileName);
 
     int choice;
@@ -129,8 +145,7 @@ int main() {
         printw("1 -> Add new task.\n");
         printw("2 -> Remove task.\n");
         printw("3 -> Mark as complete.\n");
-        printw("4 -> Mark as incomplete.\n");
-        printw("5 -> Save and quit.\n");
+        printw("4 -> Save and quit.\n");
         printw("\nEnter your choice: ");
         refresh();
 
@@ -173,25 +188,12 @@ int main() {
                 echo();
                 scanw("%d", &choice);
                 noecho();
-                markComplete(&todoList, choice - 1);
-                refresh();
-                break;
-            case 4:
-                clear();
-                for (int i = 0; i < todoList.count; ++i) {
-                    printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
-                }
-                printw("\n");
-                printw("Mark as complete: \n");
-                echo();
-                scanw("%d", &choice);
-                noecho();
-                markIncomplete(&todoList, choice - 1);
+                toggleComplete(&todoList, choice - 1);
                 refresh();
                 break;
         };
 
-    } while (choice != 5);
+    } while (choice != 4);
 
     writeToFile(&todoList, fileName);
 
