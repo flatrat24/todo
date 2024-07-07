@@ -32,11 +32,12 @@ for a little demo
 
 ## Development Todo
 - [ ] Support for multiple todo-lists
-- [ ] Provide muliple keybinds for each action
+- [ ] Provide multiple keybinds for each action
 - [ ] Toggle complete/incomplete
 - [ ] Prettier UI
 - [ ] Subtasks for each task
 - [ ] Backup file for tasks.txt
+- [ ] Support renaming tasks and subtasks
 
 ## Authors
 
