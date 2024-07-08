@@ -2,13 +2,28 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> // Used for todo.txt dates
 
-#define MAXLENGTH 50
+#define DESCRIPTIONLENGTH 50
+#define PROJECTLENGTH 15
+#define CONTEXTLENGTH 15
+#define MAXPROJECTS 25
+#define MAXCONTEXTS 25
 #define MAXITEMS 100
 
+typedef char context[CONTEXTLENGTH];
+
+typedef char project[PROJECTLENGTH];
+
 typedef struct {
-    char task[MAXLENGTH];
-    int completed;
+    char completion;
+    char priority;
+    char description[DESCRIPTIONLENGTH];
+    time_t creationDate;
+    time_t completionDate;
+    time_t dueDate;
+    context contexts[MAXCONTEXTS];
+    project projects[MAXPROJECTS];
 } todoItem;
 
 typedef struct {
@@ -31,7 +46,7 @@ void writeToFile(todoList *todoList, const char *filename) {
         return;
     } else {
         for (int i = 0; i < todoList->count; ++i) {
-            fprintf(fp, "%d, %s\n", todoList->items[i].completed, todoList->items[i].task);
+            fprintf(fp, "%c, %s\n", todoList->items[i].completion, todoList->items[i].description);
         }
     }
     fclose(fp);
@@ -44,7 +59,7 @@ void readFromFile(todoList *todoList, const char *filename) {
         return;
     } else {
         todoList->count = 0;
-        while (fscanf(fp, "%d, %[^\n]\n", &todoList->items[todoList->count].completed, todoList->items[todoList->count].task) == 2) {
+        while (fscanf(fp, "%c, %[^\n]\n", &todoList->items[todoList->count].completion, todoList->items[todoList->count].description) == 2) {
             todoList->count ++;
             if (todoList->count >= MAXITEMS) {
                 break;
@@ -54,18 +69,18 @@ void readFromFile(todoList *todoList, const char *filename) {
     fclose(fp);
 }
 
-void addTask(todoList *todoList, const char *task) {
-    if (todoList->count >= MAXLENGTH) {
+void addTask(todoList *todoList, const char *description) {
+    if (todoList->count >= DESCRIPTIONLENGTH) {
         printf("Max number of tasks reached.");
         return;
     } else {
-        strcpy(todoList->items[todoList->count].task, task);
-        todoList->items[todoList->count].completed = 0;
+        strcpy(todoList->items[todoList->count].description, description);
+        todoList->items[todoList->count].completion = 'o';
         todoList->count ++;
     }
 }
 
-void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
+void removeTasks(todoList *todoList, int taskIndicies[DESCRIPTIONLENGTH], const int n) {
     qsort(taskIndicies, n, sizeof(int), descendingOrder);
     int previousIndex = '\0';
     for (int i = 0; i < n; ++i) {
@@ -76,8 +91,8 @@ void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
                 printf("Invalid index.");
             } else {
                 for (int j = taskIndicies[i]; j < todoList->count; ++j) {
-                    strcpy(todoList->items[j].task, todoList->items[j+1].task);
-                    todoList->items[j].completed = todoList->items[j+1].completed;
+                    strcpy(todoList->items[j].description, todoList->items[j+1].description);
+                    todoList->items[j].completion = todoList->items[j+1].completion;
                 }
                 todoList->count --;
             }
@@ -86,7 +101,7 @@ void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
     }
 }
 
-void toggleComplete(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
+void toggleComplete(todoList *todoList, int taskIndicies[DESCRIPTIONLENGTH], const int n) {
     qsort(taskIndicies, n, sizeof(int), ascendingOrder);
     for (int i = 0; i < n; ++i) {
         if (todoList->count == 0 ) {
@@ -94,10 +109,10 @@ void toggleComplete(todoList *todoList, int taskIndicies[MAXLENGTH], const int n
         } else if (taskIndicies[i] < 0 || taskIndicies[i] >= todoList->count) {
             printf("Invalid index.");
         } else {
-            if (todoList->items[taskIndicies[i]].completed == 0) {
-                todoList->items[taskIndicies[i]].completed = 1;
+            if (todoList->items[taskIndicies[i]].completion == 'o') {
+                todoList->items[taskIndicies[i]].completion = 'x';
             } else {
-                todoList->items[taskIndicies[i]].completed = 0;
+                todoList->items[taskIndicies[i]].completion = 'o';
             }
         }
     }
@@ -105,7 +120,7 @@ void toggleComplete(todoList *todoList, int taskIndicies[MAXLENGTH], const int n
 
 void printList(todoList *todoList) {
     for (int i = 0; i < todoList->count; ++i) {
-        printw("%d. [%c] - %s\n", i+1, todoList->items[i].completed ? 'x' : ' ', todoList->items[i].task);
+        printw("%d. [%c] - %s\n", i+1, (todoList->items[i].completion == 'x') ? 'x' : 'o', todoList->items[i].description);
     }
 }
 
@@ -122,7 +137,7 @@ int main() {
     readFromFile(&todoList, fileName);
 
     int choice;
-    char newTask[MAXLENGTH];
+    char newTask[DESCRIPTIONLENGTH];
 
     do {
         clear();
@@ -168,9 +183,9 @@ int main() {
                 clear();
 
                 int n = 0;
-                int taskIndicies[MAXLENGTH];
+                int taskIndicies[DESCRIPTIONLENGTH];
                 char *token = strtok(input, " ");
-                while (token != NULL && n < MAXLENGTH) {
+                while (token != NULL && n < DESCRIPTIONLENGTH) {
                     taskIndicies[n++] = (atoi(token)) - 1;
                     token = strtok(NULL, " ");
                 }
@@ -195,9 +210,9 @@ int main() {
                 clear();
 
                 int n = 0;
-                int taskIndicies[MAXLENGTH];
+                int taskIndicies[DESCRIPTIONLENGTH];
                 char *token = strtok(input, " ");
-                while (token != NULL && n < MAXLENGTH) {
+                while (token != NULL && n < DESCRIPTIONLENGTH) {
                     taskIndicies[n++] = (atoi(token)) - 1;
                     token = strtok(NULL, " ");
                 }
