@@ -3,42 +3,46 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define maxLength 50
-#define maxItems 100
+#define MAXLENGTH 50
+#define MAXITEMS 100
 
 typedef struct {
-    char task[maxLength];
+    char task[MAXLENGTH];
     int completed;
 } todoItem;
 
 typedef struct {
-    todoItem items[maxItems];
+    todoItem items[MAXITEMS];
     int count;
 } todoList;
 
-void writeToFile(todoList *list, const char *filename) {
+int reverseOrder(const void *a, const void *b) {
+    return -1 * ((*(int*)a - *(int*)b));
+}
+
+void writeToFile(todoList *todoList, const char *filename) {
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
         printf("Error opening file");
         return;
     } else {
-        for (int i = 0; i < list->count; ++i) {
-            fprintf(fp, "%d, %s\n", list->items[i].completed, list->items[i].task);
+        for (int i = 0; i < todoList->count; ++i) {
+            fprintf(fp, "%d, %s\n", todoList->items[i].completed, todoList->items[i].task);
         }
     }
     fclose(fp);
 }
 
-void readFromFile(todoList *list, const char *filename) {
+void readFromFile(todoList *todoList, const char *filename) {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         printf("Error opening file");
         return;
     } else {
-        list->count = 0;
-        while (fscanf(fp, "%d, %[^\n]\n", &list->items[list->count].completed, list->items[list->count].task) == 2) {
-            list->count ++;
-            if (list->count >= maxItems) {
+        todoList->count = 0;
+        while (fscanf(fp, "%d, %[^\n]\n", &todoList->items[todoList->count].completed, todoList->items[todoList->count].task) == 2) {
+            todoList->count ++;
+            if (todoList->count >= MAXITEMS) {
                 break;
             }
         }
@@ -46,76 +50,97 @@ void readFromFile(todoList *list, const char *filename) {
     fclose(fp);
 }
 
-void addTask(todoList *list, const char *task) {
-    if (list->count >= maxLength) {
+void addTask(todoList *todoList, const char *task) {
+    if (todoList->count >= MAXLENGTH) {
         printf("Max number of tasks reached.");
         return;
     } else {
-        strcpy(list->items[list->count].task, task);
-        list->items[list->count].completed = 0;
-        list->count ++;
+        strcpy(todoList->items[todoList->count].task, task);
+        todoList->items[todoList->count].completed = 0;
+        todoList->count ++;
     }
 }
 
-void removeTask(todoList *list, const int index) {
-    if (list->count == 0 ) {
+void removeTask(todoList *todoList, const int index) {
+    if (todoList->count == 0 ) {
         printf("Todo list is currently empty.");
         return;
-    } else if (index < 0 || index > list->count) {
+    } else if (index < 0 || index > todoList->count) {
         printf("Invalid index.");
         return;
     } else {
-        list->count --;
-        for (int i = index; i < list->count; ++i) {
-            strcpy(list->items[index].task, list->items[index+1].task);
-            list->items[i].completed = list->items[i+1].completed;
+        for (int i = index; i < todoList->count; ++i) {
+            strcpy(todoList->items[i].task, todoList->items[i+1].task);
+            todoList->items[i].completed = todoList->items[i+1].completed;
+        }
+        todoList->count --;
+    }
+}
+
+void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
+    qsort(taskIndicies, n, sizeof(int), reverseOrder);
+    int previousIndex = '\0';
+    for (int i = 0; i < n; ++i) {
+        if (taskIndicies[i] != previousIndex) {
+            if (todoList->count == 0 ) {
+                printf("Todo list is currently empty.");
+            } else if (taskIndicies[i] < 0 || taskIndicies[i] >= todoList->count) {
+                printf("Invalid index.");
+            } else {
+                for (int j = taskIndicies[i]; j < todoList->count; ++j) {
+                    strcpy(todoList->items[j].task, todoList->items[j+1].task);
+                    todoList->items[j].completed = todoList->items[j+1].completed;
+                }
+                todoList->count --;
+            }
+            previousIndex = taskIndicies[i];
         }
     }
 }
 
-void markComplete(todoList *list, const int index) {
-    if (list->count == 0 ) {
-        printf("Todo list is currently empty.");
+void markComplete(todoList *todoList, const int index) {
+    if (todoList->count == 0 ) {
+        printf("Todo todoList is currently empty.");
         return;
-    } else if (index < 0 || index > list->count) {
+    } else if (index < 0 || index > todoList->count) {
         printf("Invalid index.");
         return;
     } else {
-        list->items[index].completed = 1;
+        todoList->items[index].completed = 1;
     }
 }
 
-void markIncomplete(todoList *list, const int index) {
-    if (list->count == 0 ) {
+void markIncomplete(todoList *todoList, const int index) {
+    if (todoList->count == 0 ) {
         printf("Todo list is currently empty.");
         return;
-    } else if (index < 0 || index > list->count) {
+    } else if (index < 0 || index > todoList->count) {
         printf("Invalid index.");
         return;
     } else {
-        list->items[index].completed = 0;
+        todoList->items[index].completed = 0;
     }
 }
 
-void toggleComplete(todoList *list, const int index) {
-    if (list->count == 0 ) {
+void toggleComplete(todoList *todoList, const int index) {
+    if (todoList->count == 0 ) {
         printf("Todo list is currently empty.");
         return;
-    } else if (index < 0 || index > list->count) {
+    } else if (index < 0 || index > todoList->count) {
         printf("Invalid index.");
         return;
     } else {
-        if (list->items[index].completed == 0) {
-            list->items[index].completed = 1;
+        if (todoList->items[index].completed == 0) {
+            todoList->items[index].completed = 1;
         } else {
-            list->items[index].completed = 0;
+            todoList->items[index].completed = 0;
         }
     }
 }
 
-void printList(todoList *list) {
-    for (int i = 0; i < list->count; ++i) {
-        printw("%d. [%c] - %s\n", i+1, list->items[i].completed ? 'x' : ' ', list->items[i].task);
+void printList(todoList *todoList) {
+    for (int i = 0; i < todoList->count; ++i) {
+        printw("%d. [%c] - %s\n", i+1, todoList->items[i].completed ? 'x' : ' ', todoList->items[i].task);
     }
 }
 
@@ -132,7 +157,7 @@ int main() {
     readFromFile(&todoList, fileName);
 
     int choice;
-    char newTask[maxLength];
+    char newTask[MAXLENGTH];
 
     do {
         clear();
@@ -167,15 +192,31 @@ int main() {
                 addTask(&todoList, newTask);
                 break;
             case 2:
+                /* Display current status of the todolist for the user */
                 clear();
                 for (int i = 0; i < todoList.count; ++i) {
                     printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
                 }
                 printw("Remove task (index): \n");
+
+                /* Get input from user formatted into a list of ints */
+                char input[512]; // TODO: Replace 512 with a better value
                 echo();
-                scanw("%d", &choice);
+                getstr(input);
                 noecho();
-                removeTask(&todoList, choice - 1);
+                refresh();
+                clear();
+
+                int n = 0;
+                int taskIndicies[MAXLENGTH];
+                char *token = strtok(input, " ");
+                while (token != NULL && n < MAXLENGTH) {
+                    taskIndicies[n++] = (atoi(token)) - 1;
+                    token = strtok(NULL, " ");
+                }
+
+                removeTasks(&todoList, taskIndicies, n);
+
                 refresh();
                 break;
             case 3:
