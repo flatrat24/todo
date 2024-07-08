@@ -33,7 +33,7 @@ for a little demo
 ## Development Todo
 - [ ] Support for multiple todo-lists
 - [ ] Provide multiple keybinds for each action
-- [ ] Toggle complete/incomplete
+- [x] Toggle complete/incomplete
 - [ ] Prettier UI
 - [ ] Subtasks for each task
 - [ ] Backup file for tasks.txt

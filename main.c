@@ -16,8 +16,12 @@ typedef struct {
     int count;
 } todoList;
 
-int reverseOrder(const void *a, const void *b) {
+int descendingOrder(const void *a, const void *b) {
     return -1 * ((*(int*)a - *(int*)b));
+}
+
+int ascendingOrder(const void *a, const void *b) {
+    return (*(int*)a - *(int*)b);
 }
 
 void writeToFile(todoList *todoList, const char *filename) {
@@ -61,24 +65,8 @@ void addTask(todoList *todoList, const char *task) {
     }
 }
 
-void removeTask(todoList *todoList, const int index) {
-    if (todoList->count == 0 ) {
-        printf("Todo list is currently empty.");
-        return;
-    } else if (index < 0 || index > todoList->count) {
-        printf("Invalid index.");
-        return;
-    } else {
-        for (int i = index; i < todoList->count; ++i) {
-            strcpy(todoList->items[i].task, todoList->items[i+1].task);
-            todoList->items[i].completed = todoList->items[i+1].completed;
-        }
-        todoList->count --;
-    }
-}
-
 void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
-    qsort(taskIndicies, n, sizeof(int), reverseOrder);
+    qsort(taskIndicies, n, sizeof(int), descendingOrder);
     int previousIndex = '\0';
     for (int i = 0; i < n; ++i) {
         if (taskIndicies[i] != previousIndex) {
@@ -98,42 +86,19 @@ void removeTasks(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
     }
 }
 
-void markComplete(todoList *todoList, const int index) {
-    if (todoList->count == 0 ) {
-        printf("Todo todoList is currently empty.");
-        return;
-    } else if (index < 0 || index > todoList->count) {
-        printf("Invalid index.");
-        return;
-    } else {
-        todoList->items[index].completed = 1;
-    }
-}
-
-void markIncomplete(todoList *todoList, const int index) {
-    if (todoList->count == 0 ) {
-        printf("Todo list is currently empty.");
-        return;
-    } else if (index < 0 || index > todoList->count) {
-        printf("Invalid index.");
-        return;
-    } else {
-        todoList->items[index].completed = 0;
-    }
-}
-
-void toggleComplete(todoList *todoList, const int index) {
-    if (todoList->count == 0 ) {
-        printf("Todo list is currently empty.");
-        return;
-    } else if (index < 0 || index > todoList->count) {
-        printf("Invalid index.");
-        return;
-    } else {
-        if (todoList->items[index].completed == 0) {
-            todoList->items[index].completed = 1;
+void toggleComplete(todoList *todoList, int taskIndicies[MAXLENGTH], const int n) {
+    qsort(taskIndicies, n, sizeof(int), ascendingOrder);
+    for (int i = 0; i < n; ++i) {
+        if (todoList->count == 0 ) {
+            printf("Todo todoList is currently empty.");
+        } else if (taskIndicies[i] < 0 || taskIndicies[i] >= todoList->count) {
+            printf("Invalid index.");
         } else {
-            todoList->items[index].completed = 0;
+            if (todoList->items[taskIndicies[i]].completed == 0) {
+                todoList->items[taskIndicies[i]].completed = 1;
+            } else {
+                todoList->items[taskIndicies[i]].completed = 0;
+            }
         }
     }
 }
@@ -163,9 +128,7 @@ int main() {
         clear();
         printw("<--- Manage Your Tasks --->\n");
         printw(". . . . . . . . . . . . . .\n");
-        for (int i = 0; i < todoList.count; ++i) {
-            printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
-        }
+        printList(&todoList);
         printw("\n\n");
         printw("1 -> Add new task.\n");
         printw("2 -> Remove task.\n");
@@ -180,24 +143,21 @@ int main() {
         refresh();
 
         switch (choice) {
-            case 1:
+            case 1: {
                 clear();
-                for (int i = 0; i < todoList.count; ++i) {
-                    printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
-                }
+                printList(&todoList);
                 printw("Add new task: \n");
                 echo();
                 getstr(newTask);
                 noecho();
                 addTask(&todoList, newTask);
                 break;
-            case 2:
+            }
+            case 2: {
                 /* Display current status of the todolist for the user */
                 clear();
-                for (int i = 0; i < todoList.count; ++i) {
-                    printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
-                }
-                printw("Remove task (index): \n");
+                printList(&todoList);
+                printw("Remove tasks (index): \n");
 
                 /* Get input from user formatted into a list of ints */
                 char input[512]; // TODO: Replace 512 with a better value
@@ -219,19 +179,34 @@ int main() {
 
                 refresh();
                 break;
-            case 3:
+            }
+            case 3: {
+                /* Display current status of the todolist for the user */
                 clear();
-                for (int i = 0; i < todoList.count; ++i) {
-                    printw("%d. [%c] - %s\n", i+1, todoList.items[i].completed ? 'x' : ' ', todoList.items[i].task);
-                }
-                printw("\n");
-                printw("Mark as complete: \n");
+                printList(&todoList);
+                printw("Toggle completion status (index): \n");
+
+                /* Get input from user formatted into a list of ints */
+                char input[512]; // TODO: Replace 512 with a better value
                 echo();
-                scanw("%d", &choice);
+                getstr(input);
                 noecho();
-                toggleComplete(&todoList, choice - 1);
+                refresh();
+                clear();
+
+                int n = 0;
+                int taskIndicies[MAXLENGTH];
+                char *token = strtok(input, " ");
+                while (token != NULL && n < MAXLENGTH) {
+                    taskIndicies[n++] = (atoi(token)) - 1;
+                    token = strtok(NULL, " ");
+                }
+
+                toggleComplete(&todoList, taskIndicies, n);
+
                 refresh();
                 break;
+            }
         };
 
     } while (choice != 4);
