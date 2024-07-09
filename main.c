@@ -3,33 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h> // Used for todo.txt dates
-
-#define DESCRIPTIONLENGTH 50
-#define PROJECTLENGTH 15
-#define CONTEXTLENGTH 15
-#define MAXPROJECTS 25
-#define MAXCONTEXTS 25
-#define MAXITEMS 100
-
-typedef char context[CONTEXTLENGTH];
-
-typedef char project[PROJECTLENGTH];
-
-typedef struct {
-    char completion;
-    char priority;
-    char description[DESCRIPTIONLENGTH];
-    time_t creationDate;
-    time_t completionDate;
-    time_t dueDate;
-    context contexts[MAXCONTEXTS];
-    project projects[MAXPROJECTS];
-} todoItem;
-
-typedef struct {
-    todoItem items[MAXITEMS];
-    int count;
-} todoList;
+#include <ctype.h> // Used for isupper()
+#include "formats.h"
+/* #include "defsAndStructs.h" */
 
 int descendingOrder(const void *a, const void *b) {
     return -1 * ((*(int*)a - *(int*)b));
@@ -68,6 +44,45 @@ void readFromFile(todoList *todoList, const char *filename) {
     }
     fclose(fp);
 }
+
+/*todoItem createTask(char *input) { */
+/*    todoItem returnItem; */
+/*    context contexts[MAXCONTEXTS]; */
+/*    project projects[MAXPROJECTS]; */
+
+/*    char *token = strtok(input, " "); */
+/*    char *tempList[50]; // 50 is a temp value until I use malloc() */
+/*    int n; */
+/*    for (n = 0; token != NULL; ++n) { */
+/*        tempList[n] = token; */
+/*        token = strtok(NULL, " "); */
+/*    } */
+
+/*    for (int i = 0; i < n; ++i) { */
+/*        if (isDateFormat(tempList[i]) == 0) { */
+/*            returnItem.creationDate = formatDate(tempList[i]); */
+/*        } */
+/*        /1* */
+/*        if (item is a date) { */
+/*            if (first date encountered) { */
+/*                save current date to date created */
+/*            } else if (second date encountered in a row) { */
+/*                transfer date created to date completed */
+/*                save current date to date created */
+/*            } */
+/*        } else if (item starts with @) { */
+/*            add item to contexts list */
+/*        } else if (item starts with +) { */
+/*            save item to projects list */
+/*        } else { */
+/*            add item to description */
+/*        } */
+/*        *1/ */
+/*    } */
+
+
+/*    return returnItem; */
+/*} */
 
 void addTask(todoList *todoList, const char *description) {
     if (todoList->count >= DESCRIPTIONLENGTH) {
