@@ -1,8 +1,6 @@
 #define DESCRIPTIONLENGTH 50
 #define PROJECTLENGTH 15
 #define CONTEXTLENGTH 15
-#define MAXPROJECTS 25
-#define MAXCONTEXTS 25
 #define MAXITEMS 100
 
 typedef char context[CONTEXTLENGTH];
@@ -17,13 +15,13 @@ typedef struct {
 
 typedef struct {
     char completion;
+    date completionDate;
+    date creationDate;
     char priority;
     char description[DESCRIPTIONLENGTH];
-    date creationDate;
-    date completionDate;
+    char context[CONTEXTLENGTH];
+    char project[PROJECTLENGTH];
     date dueDate;
-    context contexts[MAXCONTEXTS];
-    project projects[MAXPROJECTS];
 } todoItem;
 
 typedef struct {
