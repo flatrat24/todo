@@ -1,209 +1,99 @@
 #include <stdio.h>
-#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> // Used for todo.txt dates
 #include <ctype.h> // Used for isupper()
-#include "parseItem.h"
-/* #include "defsAndStructs.h" */
+#include "parseAndFormat.h"
 
-int descendingOrder(const void *a, const void *b) {
-    return -1 * ((*(int*)a - *(int*)b));
+void writeToFile(todoItem *(*itemArrayPointer)[], int *todoListSizePointer, char *filename) {
+  FILE *fp = fopen(filename, "w");
+  if (fp == NULL) {
+    printf("Error opening file");
+    return;
+  } else {
+    for (int i = 0; i < *todoListSizePointer; ++i) {
+      char temp[200] = { '\0' };
+      formatItem((*itemArrayPointer)[i], temp);
+      fprintf(fp, "%s\n", temp);
+      temp[0] = '\0';
+    }
+  }
+  fclose(fp);
 }
 
-int ascendingOrder(const void *a, const void *b) {
-    return (*(int*)a - *(int*)b);
+void readFromFile(char *filename, todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
+  FILE *fp = fopen(filename, "r");
+  if (fp == NULL) {
+    printf("Error opening file");
+  } else {
+    char line[200];
+    int i = 0;
+    while (fgets(line, sizeof(line), fp) != NULL) {
+      line[strlen(line) - 1] = '\0';
+
+      parseItem(line, (*itemArrayPointer)[i]);
+
+      ++i;
+      ++(*todoListSizePointer);
+    }
+  }
 }
 
-void writeToFile(todoList *todoList, const char *filename) {
-    FILE *fp = fopen(filename, "w");
-    if (fp == NULL) {
-        printf("Error opening file");
-        return;
+void printTodoList(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
+  for (int i = 0; i < *todoListSizePointer; ++i) {
+    char temp[200] = { '\0' };
+    formatItem((*itemArrayPointer)[i], temp);
+    printf("%s\n", temp);
+    temp[0] = '\0';
+  }
+}
+
+void addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
+  if (*todoListSizePointer >= MAXITEMS) {
+    printf("Maximum number of tasks in database.\n");
+    return;
+  } else {
+    printf("Task description: ");
+    char tempDescription[DESCRIPTIONLENGTH];
+    if (fgets(tempDescription, sizeof(tempDescription), stdin) != NULL) {
+      tempDescription[strlen(tempDescription) - 1] = '\0';
+      strcpy((*itemArrayPointer)[*todoListSizePointer]->description, tempDescription);
     } else {
-        for (int i = 0; i < todoList->count; ++i) {
-            fprintf(fp, "%c, %s\n", todoList->items[i].completion, todoList->items[i].description);
-        }
+      printf("Error reading input.");
     }
-    fclose(fp);
-}
 
-void readFromFile(todoList *todoList, const char *filename) {
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        printf("Error opening file");
-        return;
-    } else {
-        todoList->count = 0;
-        while (fscanf(fp, "%c, %[^\n]\n", &todoList->items[todoList->count].completion, todoList->items[todoList->count].description) == 2) {
-            todoList->count ++;
-            if (todoList->count >= MAXITEMS) {
-                break;
-            }
-        }
-    }
-    fclose(fp);
-}
+    printf("Priority: ");
+    char tempPriority[1];
+    scanf("%s", tempPriority);
+    (*itemArrayPointer)[*todoListSizePointer]->priority = tempPriority[0];
 
-void addTask(todoList *todoList, const char *description) {
-    if (todoList->count >= DESCRIPTIONLENGTH) {
-        printf("Max number of tasks reached.");
-        return;
-    } else {
-        strcpy(todoList->items[todoList->count].description, description);
-        todoList->items[todoList->count].completion = 'o';
-        todoList->count ++;
-    }
-}
+    printf("Context: ");
+    char tempContext[CONTEXTLENGTH];
+    scanf("%s", tempContext);
+    strcpy((*itemArrayPointer)[*todoListSizePointer]->context, tempContext);
 
-void removeTasks(todoList *todoList, int taskIndicies[DESCRIPTIONLENGTH], const int n) {
-    qsort(taskIndicies, n, sizeof(int), descendingOrder);
-    int previousIndex = '\0';
-    for (int i = 0; i < n; ++i) {
-        if (taskIndicies[i] != previousIndex) {
-            if (todoList->count == 0 ) {
-                printf("Todo list is currently empty.");
-            } else if (taskIndicies[i] < 0 || taskIndicies[i] >= todoList->count) {
-                printf("Invalid index.");
-            } else {
-                for (int j = taskIndicies[i]; j < todoList->count; ++j) {
-                    strcpy(todoList->items[j].description, todoList->items[j+1].description);
-                    todoList->items[j].completion = todoList->items[j+1].completion;
-                }
-                todoList->count --;
-            }
-            previousIndex = taskIndicies[i];
-        }
-    }
-}
+    printf("Project: ");
+    char tempProject[PROJECTLENGTH];
+    scanf("%s", tempProject);
+    strcpy((*itemArrayPointer)[*todoListSizePointer]->project, tempProject);
 
-void toggleComplete(todoList *todoList, int taskIndicies[DESCRIPTIONLENGTH], const int n) {
-    qsort(taskIndicies, n, sizeof(int), ascendingOrder);
-    for (int i = 0; i < n; ++i) {
-        if (todoList->count == 0 ) {
-            printf("Todo todoList is currently empty.");
-        } else if (taskIndicies[i] < 0 || taskIndicies[i] >= todoList->count) {
-            printf("Invalid index.");
-        } else {
-            if (todoList->items[taskIndicies[i]].completion == 'o') {
-                todoList->items[taskIndicies[i]].completion = 'x';
-            } else {
-                todoList->items[taskIndicies[i]].completion = 'o';
-            }
-        }
-    }
-}
-
-void printList(todoList *todoList) {
-    for (int i = 0; i < todoList->count; ++i) {
-        printw("%d. [%c] - %s\n", i+1, (todoList->items[i].completion == 'x') ? 'x' : 'o', todoList->items[i].description);
-    }
+    ++(*todoListSizePointer);
+  }
 }
 
 int main() {
-    todoList todoList;
-    todoList.count = 0;
+  int todoListSize = 0;
+  int *todoListSizePointer = &todoListSize;
+  todoItem *itemArray[MAXITEMS];
+  for (int i = 0; i < MAXITEMS; ++i) {
+    itemArray[i] = malloc(sizeof(todoItem));
+  }
+  todoItem *(*itemArrayPointer)[] = &itemArray;
 
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
+  readFromFile("todo.txt", itemArrayPointer, todoListSizePointer);
 
-    char fileName[] = "todo.txt";
-    readFromFile(&todoList, fileName);
+  addTodoItem(itemArrayPointer, todoListSizePointer);
 
-    int choice;
-    char newTask[DESCRIPTIONLENGTH];
+  writeToFile(itemArrayPointer, todoListSizePointer, "todo.txt");
 
-    do {
-        clear();
-        printw("<--- Manage Your Tasks --->\n");
-        printw(". . . . . . . . . . . . . .\n");
-        printList(&todoList);
-        printw("\n\n");
-        printw("1 -> Add new task.\n");
-        printw("2 -> Remove task.\n");
-        printw("3 -> Mark as complete.\n");
-        printw("4 -> Save and quit.\n");
-        printw("\nEnter your choice: ");
-        refresh();
-
-        echo();
-        scanw("%d", &choice);
-        noecho();
-        refresh();
-
-        switch (choice) {
-            case 1: {
-                clear();
-                printList(&todoList);
-                printw("Add new task: \n");
-                echo();
-                getstr(newTask);
-                noecho();
-                addTask(&todoList, newTask);
-                break;
-            }
-            case 2: {
-                /* Display current status of the todolist for the user */
-                clear();
-                printList(&todoList);
-                printw("Remove tasks (index): \n");
-
-                /* Get input from user formatted into a list of ints */
-                char input[512]; // TODO: Replace 512 with a better value
-                echo();
-                getstr(input);
-                noecho();
-                refresh();
-                clear();
-
-                int n = 0;
-                int taskIndicies[DESCRIPTIONLENGTH];
-                char *token = strtok(input, " ");
-                while (token != NULL && n < DESCRIPTIONLENGTH) {
-                    taskIndicies[n++] = (atoi(token)) - 1;
-                    token = strtok(NULL, " ");
-                }
-
-                removeTasks(&todoList, taskIndicies, n);
-
-                refresh();
-                break;
-            }
-            case 3: {
-                /* Display current status of the todolist for the user */
-                clear();
-                printList(&todoList);
-                printw("Toggle completion status (index): \n");
-
-                /* Get input from user formatted into a list of ints */
-                char input[512]; // TODO: Replace 512 with a better value
-                echo();
-                getstr(input);
-                noecho();
-                refresh();
-                clear();
-
-                int n = 0;
-                int taskIndicies[DESCRIPTIONLENGTH];
-                char *token = strtok(input, " ");
-                while (token != NULL && n < DESCRIPTIONLENGTH) {
-                    taskIndicies[n++] = (atoi(token)) - 1;
-                    token = strtok(NULL, " ");
-                }
-
-                toggleComplete(&todoList, taskIndicies, n);
-
-                refresh();
-                break;
-            }
-        };
-
-    } while (choice != 4);
-
-    writeToFile(&todoList, fileName);
-
-    endwin();
-    return 0;
+  printTodoList(itemArrayPointer, todoListSizePointer);
 }
