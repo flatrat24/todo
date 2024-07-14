@@ -80,6 +80,34 @@ void addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
   }
 }
 
+void addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
+  ;
+  // Only run if the database isn't already full.
+  // Ask for a description of the task
+  //  - Mandatory
+  //  - Can't include @
+  //  - Can't include +
+  //  - Can't begin with 'x '
+  //  - Can't begin with '(<Uppercase Letter>)'
+  //  - Can't inlude '<str>:<str>' formatting
+  // Ask for the priority of the task
+  //  - Accepts any single alphabetical character
+  //  - Can't be non-alphabetical
+  //  - Can't be more than one character
+  //  - If no characters, the attribute is not assigned
+  // Ask for context
+  //  - Single word, no other restrictions
+  //  - If no characters, the attribute is not assigned
+  // Ask for project
+  //  - Single word, no other restrictions
+  //  - If no characters, the attribute is not assigned
+  // Ask for due-date:
+  //  - Format in YYYY-MM-DD
+  //  - Accept any non-number characters as delimiters
+  //  - If no characters, the attribute is not assigned
+  // Automatically assign a creation date
+}
+
 int main() {
   int todoListSize = 0;
   int *todoListSizePointer = &todoListSize;
