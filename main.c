@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h> // Used for isupper()
+#include <ctype.h>
 #include "parseAndFormat.h"
+#include "createItem.h"
+#include "helperFunctions.h"
 
 void writeToFile(todoItem *(*itemArrayPointer)[], int *todoListSizePointer, char *filename) {
   FILE *fp = fopen(filename, "w");
@@ -47,65 +49,92 @@ void printTodoList(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
   }
 }
 
-void addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
+int addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
   if (*todoListSizePointer >= MAXITEMS) {
-    printf("Maximum number of tasks in database.\n");
-    return;
+    printf("Todo list full, consider getting some shit done.");
   } else {
-    printf("Task description: ");
-    char tempDescription[DESCRIPTIONLENGTH];
-    if (fgets(tempDescription, sizeof(tempDescription), stdin) != NULL) {
-      tempDescription[strlen(tempDescription) - 1] = '\0';
-      strcpy((*itemArrayPointer)[*todoListSizePointer]->description, tempDescription);
+    char buffer[100]; // TODO: Find a better value for the length. Possibly malloc()?
+
+    char description[DESCRIPTIONLENGTH];
+    printf("Task Description: ");
+    if (fgets(buffer, sizeof(description), stdin)) {
+      char lastChar = buffer[strlen(buffer) - 1];
+      buffer[strlen(buffer) - 1] = '\0';
+      if (lastChar != '\n') {
+        clearInputBuffer();
+        printf("Error: Input too long.\n");
+        return 1;
+      } else if ((validDescriptionInput(buffer) != true)) {
+        printf("Error: Formatting conflicts.\n");
+        return 1;
+      } else {
+        strcpy(description, buffer);
+      }
     } else {
-      printf("Error reading input.");
+      printf("Error: Couldn't read input.");
     }
+    buffer[0] = '\0';
 
-    printf("Priority: ");
-    char tempPriority[1];
-    scanf("%s", tempPriority);
-    (*itemArrayPointer)[*todoListSizePointer]->priority = tempPriority[0];
+    char priority;
+    printf("Task Priority: ");
+    if (fgets(buffer, sizeof(priority+1), stdin)) {
+      char lastChar = buffer[strlen(buffer) - 1];
+      buffer[strlen(buffer) - 1] = '\0';
+      if (lastChar != '\n') {
+        clearInputBuffer();
+        printf("Error: Input too long.\n");
+        return 1;
+      } else if ((validPriorityInput(buffer) == false)) {
+        printf("Error: Formatting conflicts.\n");
+        return 1;
+      } else {
+        priority = buffer[0];
+      }
+    } else {
+      printf("Error: Couldn't read input.");
+    }
+    buffer[0] = '\0';
 
-    printf("Context: ");
-    char tempContext[CONTEXTLENGTH];
-    scanf("%s", tempContext);
-    strcpy((*itemArrayPointer)[*todoListSizePointer]->context, tempContext);
+    char project[PROJECTLENGTH];
+    printf("Task Priority: ");
+    if (fgets(buffer, sizeof(project), stdin)) {
+      char lastChar = buffer[strlen(buffer) - 1];
+      buffer[strlen(buffer) - 1] = '\0';
+      if (lastChar != '\n') {
+        clearInputBuffer();
+        printf("Error: Input too long.\n");
+        return 1;
+      } else if ((validProjectInput(buffer) != true)) {
+        printf("Error: Formatting conflicts.\n");
+        return 1;
+      } else {
+        strcpy(project, buffer);
+      }
+    } else {
+      printf("Error: Couldn't read input.");
+    }
+    buffer[0] = '\0';
 
-    printf("Project: ");
-    char tempProject[PROJECTLENGTH];
-    scanf("%s", tempProject);
-    strcpy((*itemArrayPointer)[*todoListSizePointer]->project, tempProject);
-
-    ++(*todoListSizePointer);
+    char context[CONTEXTLENGTH];
+    printf("Task Context: ");
+    if (fgets(buffer, sizeof(context), stdin)) {
+      char lastChar = buffer[strlen(buffer) - 1];
+      buffer[strlen(buffer) - 1] = '\0';
+      if (lastChar != '\n') {
+        clearInputBuffer();
+        printf("Error: Input too long.\n");
+        return 1;
+      } else if ((validContextInput(buffer) != true)) {
+        printf("Error: Formatting conflicts.\n");
+        return 1;
+      } else {
+        strcpy(context, buffer);
+      }
+    } else {
+      printf("Error: Couldn't read input.");
+    }
+    buffer[0] = '\0';
   }
-}
-
-void addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
-  ;
-  // Only run if the database isn't already full.
-  // Ask for a description of the task
-  //  - Mandatory
-  //  - Can't include @
-  //  - Can't include +
-  //  - Can't begin with 'x '
-  //  - Can't begin with '(<Uppercase Letter>)'
-  //  - Can't inlude '<str>:<str>' formatting
-  // Ask for the priority of the task
-  //  - Accepts any single alphabetical character
-  //  - Can't be non-alphabetical
-  //  - Can't be more than one character
-  //  - If no characters, the attribute is not assigned
-  // Ask for context
-  //  - Single word, no other restrictions
-  //  - If no characters, the attribute is not assigned
-  // Ask for project
-  //  - Single word, no other restrictions
-  //  - If no characters, the attribute is not assigned
-  // Ask for due-date:
-  //  - Format in YYYY-MM-DD
-  //  - Accept any non-number characters as delimiters
-  //  - If no characters, the attribute is not assigned
-  // Automatically assign a creation date
 }
 
 int main() {
