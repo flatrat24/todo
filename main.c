@@ -1,4 +1,3 @@
-òª`Y8N<£k-.ÉÄLÔÙ
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
