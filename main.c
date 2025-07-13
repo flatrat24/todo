@@ -138,19 +138,23 @@ int addTodoItem(todoItem *(*itemArrayPointer)[], int *todoListSizePointer) {
 }
 
 int main() {
-  int todoListSize = 0;
-  int *todoListSizePointer = &todoListSize;
+  int todoArraySize = 0;
+  int *todoArraySizePointer = &todoArraySize;
   todoItem *itemArray[MAXITEMS];
   for (int i = 0; i < MAXITEMS; ++i) {
     itemArray[i] = malloc(sizeof(todoItem));
   }
   todoItem *(*itemArrayPointer)[] = &itemArray;
 
-  readFromFile("todo.txt", itemArrayPointer, todoListSizePointer);
+  (*itemArrayPointer)[0]->complete = 0;
+  printf("%d\n", (*itemArrayPointer)[0]->complete);
 
-  addTodoItem(itemArrayPointer, todoListSizePointer);
-
-  writeToFile(itemArrayPointer, todoListSizePointer, "todo.txt");
-
-  printTodoList(itemArrayPointer, todoListSizePointer);
+  for (int i = 0; i < MAXCONTEXTS; ++i) {
+    context temp;
+    (*itemArrayPointer)[0]->contexts[i] = &temp;
+  }
+  for (int i = 0; i < MAXPROJECTS; ++i) {
+    context temp;
+    (*itemArrayPointer)[0]->projects[i] = &temp;
+  }
 }

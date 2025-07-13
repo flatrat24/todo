@@ -1,7 +1,13 @@
 #define DESCRIPTIONLENGTH 50
 #define PROJECTLENGTH 15
 #define CONTEXTLENGTH 15
+#define MAXCONTEXTS 10
+#define MAXPROJECTS 10
 #define MAXITEMS 100
+
+typedef int bool;
+#define true 1
+#define false 0
 
 typedef char context[CONTEXTLENGTH];
 
@@ -14,13 +20,13 @@ typedef struct {
 } date;
 
 typedef struct {
-    char completion;
+    bool complete;
     date completionDate;
     date creationDate;
     char priority;
     char description[DESCRIPTIONLENGTH];
-    char context[CONTEXTLENGTH];
-    char project[PROJECTLENGTH];
+    context *contexts[MAXCONTEXTS];
+    project *projects[MAXPROJECTS];
     date dueDate;
 } todoItem;
 
